@@ -61,18 +61,32 @@ int value_pot5;
 int value_pot4;
 #define LED 13 // 6 on Teensy++ 2.0, 11 on Teensy 2.0, to see if MIDI is being recieved
 
+// sue normal _Serial_ on no-leonardo boards! Mega is Serial + Serial1
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial,    MIDI_1);
 
+// use software serial to merge to signals
+//#include <SoftwareSerial.h>
+//SoftwareSerial midiSerial(2,3);
+//MIDI_CREATE_INSTANCE(SoftwareSerial, midiSerial, MIDI_2);
 
+// second mega port
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI_2);
+
+    
 void setup(){
   
-    pinMode(LED, OUTPUT);
+  pinMode(LED, OUTPUT);
 
 
-  MIDI.begin(MIDI_CHANNEL_OMNI); 
+  MIDI_1.begin(MIDI_CHANNEL_OMNI); 
   
-  MIDI.setHandleNoteOn(MyHandleNoteOn);
-  MIDI.setHandleNoteOff(MyHandleNoteOff);
+  MIDI_1.setHandleNoteOn(MyHandleNoteOn);
+  MIDI_1.setHandleNoteOff(MyHandleNoteOff);
+
+  MIDI_2.begin(MIDI_CHANNEL_OMNI); 
   
+  MIDI_2.setHandleNoteOn(MyHandleNoteOn);
+  MIDI_2.setHandleNoteOff(MyHandleNoteOff);  
   
   env.setADLevels(200,100);
     env.setTimes(50,200,10000,200); // 10000 is so the note will sustain 10 seconds unless a noteOff comes
@@ -83,7 +97,8 @@ void setup(){
 
 
 void updateControl(){
-  MIDI.read();
+  MIDI_1.read();
+  MIDI_2.read();
   
   // the probrelamtic values for _wave shapes_ ... hard code to see, if it works
   value_pot0= 0; //mozziAnalogRead(A0); // A0 used elesewhere now!!
